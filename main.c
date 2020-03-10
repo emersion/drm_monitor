@@ -71,11 +71,11 @@ static void handle_sequence(int fd, uint64_t seq, uint64_t ns, uint64_t data) {
 static const char usage[] =
 	"Usage: drm_monitor [options...]\n"
 	"\n"
-	"  -d              Specify DRM device number (default 0).\n"
+	"  -d              Specify DRM device (default /dev/dri/card0).\n"
 	"  -h              Show help message and quit.\n";
 	
 int main(int argc, char *argv[]) {
-	int device_num = 0;
+	char *device_path = "/dev/dri/card0";
 	int opt;
 	while ((opt = getopt(argc, argv, "hd:")) != -1) {
 		switch (opt) {
@@ -83,16 +83,12 @@ int main(int argc, char *argv[]) {
 			printf("%s", usage);
 			return EXIT_SUCCESS;
 		case 'd':
-			device_num = strtod(optarg, NULL);
+			device_path = strdup(optarg);
 			break;
 		default:
 			return EXIT_FAILURE;
 		}
 	}
-
-	// 100 bytes should be more than enough
-	char device_path[100];
-	snprintf(device_path, sizeof(device_path), "/dev/dri/card%d", device_num);
 	int fd = open(device_path, O_RDONLY);
 	if (fd < 0) {
 		perror("open");
