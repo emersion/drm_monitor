@@ -75,7 +75,8 @@ static const char usage[] =
 	"  -h              Show help message and quit.\n";
 	
 int main(int argc, char *argv[]) {
-	char *device_path = "/dev/dri/card0";
+	char *default_device = "/dev/dri/card0";
+	char *device_path = NULL;
 	int opt;
 	while ((opt = getopt(argc, argv, "hd:")) != -1) {
 		switch (opt) {
@@ -89,11 +90,16 @@ int main(int argc, char *argv[]) {
 			return EXIT_FAILURE;
 		}
 	}
+	
+	if ((device_path == NULL) || (device_path[0] == '\0')) {
+		device_path = strdup(default_device);
+	}
 	int fd = open(device_path, O_RDONLY);
 	if (fd < 0) {
 		perror("open");
 		return 1;
 	}
+	free(device_path);
 
 	drmModeRes *res = drmModeGetResources(fd);
 	if (res == NULL) {
