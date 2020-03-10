@@ -1,8 +1,11 @@
+#define _POSIX_C_SOURCE 200809L
 #include <assert.h>
 #include <inttypes.h>
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -65,9 +68,32 @@ static void handle_sequence(int fd, uint64_t seq, uint64_t ns, uint64_t data) {
 	monitor_crtc(fd, crtc);
 }
 
+static const char usage[] =
+	"Usage: drm_monitor [options...]\n"
+	"\n"
+	"  -d              Specify DRM device number (default 0).\n"
+	"  -h              Show help message and quit.\n";
+	
 int main(int argc, char *argv[]) {
-	// TODO: make device configurable
-	int fd = open("/dev/dri/card0", O_RDONLY);
+	int device_num = 0;
+	int opt;
+	while ((opt = getopt(argc, argv, "hd:")) != -1) {
+		switch (opt) {
+		case 'h':
+			printf("%s", usage);
+			return EXIT_SUCCESS;
+		case 'd':
+			device_num = strtod(optarg, NULL);
+			break;
+		default:
+			return EXIT_FAILURE;
+		}
+	}
+
+	// 100 bytes should be more than enough
+	char device_path[100];
+	snprintf(device_path, sizeof(device_path), "/dev/dri/card%d", device_num);
+	int fd = open(device_path, O_RDONLY);
 	if (fd < 0) {
 		perror("open");
 		return 1;
