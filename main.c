@@ -73,7 +73,7 @@ static const char usage[] =
 	"\n"
 	"  -d              Specify DRM device (default /dev/dri/card0).\n"
 	"  -h              Show help message and quit.\n";
-	
+
 int main(int argc, char *argv[]) {
 	char *device_path = "/dev/dri/card0";
 	int opt;
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 			printf("%s", usage);
 			return EXIT_SUCCESS;
 		case 'd':
-			device_path = strdup(optarg);
+			device_path = optarg;
 			break;
 		default:
 			return EXIT_FAILURE;
