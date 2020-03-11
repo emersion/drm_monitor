@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include <assert.h>
+#include <errno.h>
 #include <inttypes.h>
 #include <fcntl.h>
 #include <stdbool.h>
@@ -30,7 +31,7 @@ static int monitor_crtc(int fd, struct crtc *crtc) {
 		DRM_CRTC_SEQUENCE_NEXT_ON_MISS;
 	int ret = drmCrtcQueueSequence(fd, crtc->id, queue_flags,
 		1, NULL, (uint64_t)crtc);
-	if (ret != 0) {
+	if (ret != 0 && errno != EINVAL) {
 		perror("drmCrtcQueueSequence");
 		return ret;
 	}
@@ -107,7 +108,9 @@ int main(int argc, char *argv[]) {
 		struct crtc *crtc = &crtcs[i];
 		crtc->id = res->crtcs[i];
 
-		if (drmCrtcGetSequence(fd, crtc->id, &crtc->seq, &crtc->ns) != 0) {
+		int ret = drmCrtcGetSequence(fd, crtc->id, &crtc->seq, &crtc->ns);
+		if (ret != 0 && errno != EINVAL) {
+			// EINVAL can happen if the CRTC is disabled
 			perror("drmCrtcGetSequence");
 			return 1;
 		}
