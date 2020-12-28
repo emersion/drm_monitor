@@ -50,8 +50,12 @@ static void print_state(void) {
 
 	for (size_t i = 0; i < crtcs_len; i++) {
 		struct crtc *crtc = &crtcs[i];
-		printf("CRTC %"PRIu32": seq=%"PRIu64" ns=%"PRIu64" delta_ns=%"PRIu64"\n",
-			crtc->id, crtc->seq, crtc->ns, crtc->delta_ns);
+		double rate = 0;
+		if (crtc->delta_ns > 0) {
+			rate = 1000000000.0 / crtc->delta_ns;
+		}
+		printf("CRTC %"PRIu32": seq=%"PRIu64" ns=%"PRIu64" delta_ns=%"PRIu64" Hz=%f\n",
+			crtc->id, crtc->seq, crtc->ns, crtc->delta_ns, rate);
 	}
 }
 
